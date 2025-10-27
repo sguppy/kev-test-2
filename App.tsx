@@ -1,14 +1,16 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ScanLines } from './components/ScanLines';
 import { NoiseOverlay } from './components/NoiseOverlay';
 import { TerminalWindow } from './components/TerminalWindow';
 import { TypingText } from './components/TypingText';
 import { BlinkingCursor } from './components/BlinkingCursor';
-import { CRTEmbed } from './components/CRTEmbed';
-import type { Tab } from './types';
+import { projects } from './data/projects';
+import type { Tab, Project } from './types';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('SYSTEM');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [initializing, setInitializing] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -21,21 +23,42 @@ const App: React.FC = () => {
     if (!mainEl) return;
 
     const handleScroll = () => {
-      // Set isScrolled to true if scrolled more than a few pixels
       setIsScrolled(mainEl.scrollTop > 10);
     };
 
     mainEl.addEventListener('scroll', handleScroll, { passive: true });
     
-    // Initial check in case it's already scrolled on load
     handleScroll();
 
     return () => {
       mainEl.removeEventListener('scroll', handleScroll);
     };
-  }, [initializing]); // Re-run effect when the main element is rendered
+  }, [initializing, selectedProject]); // Re-run effect when main element content changes
+
+  const handleTabClick = (tab: Tab) => {
+    // If we're on the projects tab and click it again, go back to project list
+    if (activeTab === tab && tab === 'PROJECTS') {
+      setSelectedProject(null);
+    } else {
+      // Otherwise, switch tab and clear project selection
+      setActiveTab(tab);
+      setSelectedProject(null);
+    }
+    // Scroll to top when changing views
+    if(mainRef.current) mainRef.current.scrollTop = 0;
+  };
+
+  const handleProjectClick = (project: Project) => {
+    setSelectedProject(project);
+    // Scroll to top when changing views
+    if(mainRef.current) mainRef.current.scrollTop = 0;
+  };
 
   const renderContent = () => {
+    if (activeTab === 'PROJECTS' && selectedProject) {
+      return selectedProject.details;
+    }
+
     switch (activeTab) {
       case 'SYSTEM':
         return (
@@ -57,20 +80,18 @@ const App: React.FC = () => {
           <>
             <p className="mb-2">&gt; ACCESSING PROJECT ARCHIVES...</p>
             <div className="border-t-2 border-green-400/30 pt-2">
-              <p className="font-bold mb-1">PROJECT: NEBULA // AI-DRIVEN DATA VISUALIZER</p>
-              <p className="ml-4 mb-2">STATUS: ONLINE - A tool for rendering complex data streams into navigable 3D wireframe models.</p>
-
-              <p className="font-bold mb-1">PROJECT: CYPHER // DECENTRALIZED COMS NETWORK</p>
-              <p className="ml-4 mb-2">STATUS: ACTIVE - Peer-to-peer encrypted communication protocol, resistant to surveillance.</p>
-
-              <p className="font-bold mb-1">PROJECT: GHOST // STEALTH OS KERNEL</p>
-              <p className="ml-4 mb-2">STATUS: DEVELOPMENT - A lightweight operating system designed to leave no digital footprint.</p>
-
-              <p className="font-bold mb-1 mt-4">PROJECT: GRIDVIEW // LIVE CITY FEED</p>
-              <p className="ml-4 mb-2">STATUS: STREAMING - Real-time atmospheric feed from Neo-Sector 7.</p>
-              <div className="ml-4">
-                  <CRTEmbed videoId="YGZI_1vEPfw" title="Live City Feed from Neo-Sector 7" />
-              </div>
+              {projects.map((project) => (
+                <div key={project.id} className="mb-4">
+                  <button 
+                    onClick={() => handleProjectClick(project)} 
+                    className="font-bold text-left hover:text-white transition-colors duration-200 block w-full"
+                    aria-label={`View details for ${project.shortTitle}`}
+                  >
+                    <span className="text-green-400/60 mr-2">&gt;</span>{project.title}
+                  </button>
+                  <p className="ml-6 text-green-400/80">STATUS: {project.status} - {project.description}</p>
+                </div>
+              ))}
             </div>
           </>
         );
@@ -93,21 +114,37 @@ const App: React.FC = () => {
   };
 
   const NavigationButtons = (
-    <nav>
-      <ul className="flex space-x-4">
+    <nav aria-label="Main navigation">
+      <ul className="flex space-x-2 items-center">
         {tabs.map((tab) => (
-          <li key={tab}>
-            <button
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1 border-2 transition-all duration-200 text-sm ${
-                activeTab === tab
-                  ? 'bg-green-400 text-black'
-                  : 'border-green-400/50 hover:bg-green-400/20'
-              }`}
-            >
-              {tab}
-            </button>
-          </li>
+          <React.Fragment key={tab}>
+            <li>
+              <button
+                onClick={() => handleTabClick(tab)}
+                className={`px-4 py-1 border-2 transition-all duration-200 text-sm ${
+                  activeTab === tab
+                    ? 'bg-green-400 text-black'
+                    : 'border-green-400/50 hover:bg-green-400/20'
+                }`}
+                aria-current={activeTab === tab ? 'page' : undefined}
+              >
+                {tab}
+              </button>
+            </li>
+            {tab === 'PROJECTS' && selectedProject && (
+              <>
+                <li className="text-green-400/70 select-none text-lg" aria-hidden="true">&gt;</li>
+                <li>
+                  <button
+                    className="px-4 py-1 border-2 bg-green-400 text-black transition-all duration-200 text-sm"
+                    aria-current="page"
+                  >
+                    {selectedProject.shortTitle}
+                  </button>
+                </li>
+              </>
+            )}
+          </React.Fragment>
         ))}
       </ul>
     </nav>
@@ -117,15 +154,26 @@ const App: React.FC = () => {
     <div className="bg-black min-h-screen text-green-400 flex flex-col items-center justify-center p-4 selection:bg-green-400 selection:text-black">
       <ScanLines />
       <NoiseOverlay />
-      <div className="w-full max-w-5xl h-[90vh] border-4 border-green-400/50 rounded-lg p-4 bg-black/50 [box-shadow:0_0_20px_rgba(16,185,129,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] flex flex-col animate-[crt-flicker_3s_infinite]">
-        <header className="flex justify-between items-center border-b-2 border-green-400/30 pb-2 mb-4 animate-[text-flicker_2s_infinite]">
-          <div className="flex items-center gap-8">
-            <h1 className="text-2xl">CYBERPUNK TERMINAL INTERFACE</h1>
+      <div className="relative w-full max-w-5xl h-[90vh] border-4 border-green-400/50 rounded-b-lg rounded-l-lg p-4 bg-black/50 [box-shadow:0_0_20px_rgba(16,185,129,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] flex flex-col animate-[crt-flicker_3s_infinite]">
+        <div className="absolute -top-[2px] -right-[2px]" aria-hidden="true">
+            <div className="flex items-center">
+                <div className="w-16 h-[4px] bg-green-400/50"></div>
+                <div className="bg-black pl-2 pr-1 text-base md:text-lg text-green-400 whitespace-nowrap animate-[text-flicker_2s_infinite]">
+                    0x7A2F_v1.3.37
+                </div>
+                <div className="w-[4px] h-14 bg-green-400/50 -ml-[2px]"></div>
+            </div>
+        </div>
+        <header className="flex items-start border-b-2 border-green-400/30 pb-2 mb-4 animate-[text-flicker_2s_infinite]">
+          <div className="flex items-center gap-x-4 gap-y-2 md:gap-x-8 flex-wrap">
+            <h1 className="text-xl md:text-2xl">
+              <span className="lg:hidden">CYBERPUNK TERMINAL</span>
+              <span className="hidden lg:inline">CYBERPUNK TERMINAL INTERFACE</span>
+            </h1>
             <div className={`transition-opacity duration-300 ${isScrolled ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
               {NavigationButtons}
             </div>
           </div>
-          <div className="text-lg">0x7A2F_v1.3.37</div>
         </header>
         
         <main ref={mainRef} className="flex-grow overflow-y-auto pr-2">
@@ -136,7 +184,7 @@ const App: React.FC = () => {
               <div className={`mb-4 transition-opacity duration-300 ${isScrolled ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 {NavigationButtons}
               </div>
-              <TerminalWindow title={activeTab}>
+              <TerminalWindow title={selectedProject ? `PROJECTS > ${selectedProject.shortTitle}` : activeTab}>
                 {renderContent()}
               </TerminalWindow>
             </>
