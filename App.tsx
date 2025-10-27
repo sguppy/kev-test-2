@@ -154,7 +154,7 @@ const App: React.FC = () => {
     <div className="bg-black min-h-screen text-green-400 flex flex-col items-center justify-center p-4 selection:bg-green-400 selection:text-black">
       <ScanLines />
       <NoiseOverlay />
-      <div className="relative w-full max-w-5xl h-[90vh] border-4 border-green-400/50 rounded-b-lg rounded-l-lg p-4 bg-black/50 [box-shadow:0_0_20px_rgba(16,185,129,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] flex flex-col animate-[crt-flicker_3s_infinite]">
+      <div className="relative w-full max-w-5xl h-[90vh] border-4 border-green-400/50 rounded-l-lg p-4 pr-6 bg-black/50 [box-shadow:0_0_20px_rgba(16,185,129,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] flex flex-col animate-[crt-flicker_3s_infinite]">
         <div className="absolute -top-[2px] -right-[2px]" aria-hidden="true">
             <div className="flex items-center">
                 <div className="w-16 h-[4px] bg-green-400/50"></div>
@@ -176,7 +176,7 @@ const App: React.FC = () => {
           </div>
         </header>
         
-        <main ref={mainRef} className="flex-grow overflow-y-auto pr-2">
+        <main ref={mainRef} className="flex-grow overflow-y-auto pr-2 min-h-0">
           {initializing ? (
             <TypingText text="> INITIALIZING CRT DISPLAY... BOOT SEQUENCE INITIATED... WELCOME TO THE GRID..." onComplete={() => setInitializing(false)} />
           ) : (
