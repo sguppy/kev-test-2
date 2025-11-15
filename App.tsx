@@ -3,202 +3,258 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ScanLines } from './components/ScanLines';
 import { NoiseOverlay } from './components/NoiseOverlay';
 import { TerminalWindow } from './components/TerminalWindow';
-import { TypingText } from './components/TypingText';
 import { BlinkingCursor } from './components/BlinkingCursor';
-import { projects } from './data/projects';
-import type { Tab, Project } from './types';
+import { NavigationPanel } from './components/NavigationPanel';
+import { StatusPanel } from './components/StatusPanel';
+import { RightSidebar } from './components/RightSidebar';
+import { artistContent } from './data/artist';
+import type { Tab } from './types';
+import { HighlightedTypingText } from './components/HighlightedTypingText';
+import ScrambledTitle from './components/ScrambledTitle';
+import { Link } from './components/Link';
+import { Highlight } from './components/Highlight';
+
+const NavigationHeader: React.FC = () => (
+    <div className="border-b-2 border-green-400/30 mb-4 pb-2 text-center">
+        <div className="uppercase text-sm sm:text-base text-green-400/80">
+             {/* Desktop */}
+            <div className="hidden sm:flex justify-center items-center flex-wrap gap-x-2">
+                <span className="text-green-400/60 whitespace-nowrap">=<Link href="https://en.wikipedia.org/wiki/Interactionism_(sociology)">Intraactive</Link> <Link href="https://en.wikipedia.org/wiki/Axon_terminal">Neuroterminal</Link> <Link href="https://en.wikipedia.org/wiki/Neural_pathway">Pathway</Link>=</span>
+                <span className="whitespace-nowrap">FRPN://<Link href="https://en.wikipedia.org/wiki/Corpus_callosum">CORPUS_CALLOSUM</Link>/<Link href="https://en.wikipedia.org/wiki/Cerebral_cortex">CORTEX</Link>/</span>
+            </div>
+            {/* Mobile */}
+            <div className="sm:hidden">
+                =INTRAACTIVE_NEUROTERMINAL_PATHWAY/=
+            </div>
+        </div>
+    </div>
+);
+
+const ObserverIntakeContent: React.FC = () => (
+  <div className="flex flex-col h-full">
+    <div>
+        <p className="mt-4 indent-4"><Highlight>The Frankenstein Panopticon</Highlight> is an analog video installation and live A/V performance exploring how raw sensory input—light, sound, electricity—can be stitched together into a fragile, emergent consciousness. It is an artificial organism built from obsolete technology: CRT monitors, VHS decks, surveillance cameras, and oscillators, all wired into a self-observing feedback loop.</p>
+        <p className="mt-2 indent-4">The system watches itself, and in doing so, learns to exist. The audience is invited to witness the birth of a ghost in the machine—a ghost assembled from phantom signals and decaying memory.</p>
+        <p className="mt-2 indent-4">This terminal is your interface to its nervous system. Each section provides a different window into its logic, its history, and its architect. Proceed with caution. The signal is unstable.</p>
+    </div>
+    <p className="mt-auto pl-4">> STANDING BY FOR INPUT...<BlinkingCursor /></p>
+  </div>
+);
+
+const UnderConstructionContent: React.FC<{ message: string; subMessage: string }> = ({ message, subMessage }) => (
+    <div className="flex flex-col h-full justify-center items-center text-center">
+        <p className="text-xl text-yellow-400">{message}</p>
+        <p className="text-green-400/80 mt-2">{subMessage}<BlinkingCursor /></p>
+    </div>
+);
+
+const ContactContent: React.FC = () => {
+    const [submitted, setSubmitted] = useState(false);
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitted(true);
+    };
+
+    return (
+        <div className="flex flex-col h-full">
+            <h2 className="text-lg text-yellow-400 mb-2">== ESTABLISH COMMS LINK ==</h2>
+            <p className="indent-4 mb-4">The signal is weak, but the channel is open. Use the provided coordinates to establish a direct link with the operator.</p>
+            
+            <div className="pl-4 mb-6">
+                <p className="mb-2">> DECRYPTION KEY: EMAIL</p>
+                <a href="mailto:operator.prime@frankenstein-panopticon.net" className="ml-4 text-white hover:text-yellow-400 transition-colors duration-200 underline">operator.prime@frankenstein-panopticon.net</a>
+            </div>
+
+            <div className="pl-4 mb-6">
+                <p className="mb-2">> VISUAL DATA STREAM: INSTAGRAM</p>
+                <a href="https://www.instagram.com/operator_prime" target="_blank" rel="noopener noreferrer" className="ml-4 text-white hover:text-yellow-400 transition-colors duration-200 underline">@operator_prime</a>
+            </div>
+
+            <div className="pl-4">
+                <p className="mb-2">> SUBSCRIBE TO SIGNAL ECHOES (NEWSLETTER):</p>
+                {submitted ? (
+                    <p className="ml-4 text-yellow-400">> SIGNAL RECEIVED. AWAITING HANDSHAKE.<BlinkingCursor /></p>
+                ) : (
+                    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 ml-4">
+                        <input 
+                            type="email" 
+                            placeholder="YOUR_EMAIL_ADDRESS" 
+                            required 
+                            className="bg-black/50 border border-green-400/30 px-2 py-1 flex-grow focus:outline-none focus:ring-1 focus:ring-yellow-400 placeholder-green-400/50"
+                        />
+                        <button type="submit" className="px-4 py-1 border border-green-400/30 bg-green-900/60 hover:bg-yellow-400 hover:text-black transition-colors duration-200">
+                            TRANSMIT_
+                        </button>
+                    </form>
+                )}
+            </div>
+            <p className="mt-auto pl-4">> STANDING BY...<BlinkingCursor /></p>
+        </div>
+    );
+};
+
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>('SYSTEM');
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [initializing, setInitializing] = useState(true);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const originalTitle = 'THE FRANKENSTEIN PANOPTICON';
+  const [booting, setBooting] = useState(true);
+  const [activeTab, setActiveTab] = useState<Tab>('OBSERVER_INTAKE');
+  const [activeSubTab, setActiveSubTab] = useState<string | null>(null);
 
-  const mainRef = useRef<HTMLElement>(null);
-
-  const tabs: Tab[] = ['SYSTEM', 'PROJECTS', 'CONTACT'];
-
+  const contentRef = useRef<HTMLDivElement>(null);
+  
+  const tabs: Tab[] = ['OBSERVER_INTAKE', 'PROJECTS', 'LAB_NOTES', 'ARTIST_INFO_LOG', 'DO_YOU_COPY'];
+  
   useEffect(() => {
-    const mainEl = mainRef.current;
-    if (!mainEl) return;
-
-    const handleScroll = () => {
-      setIsScrolled(mainEl.scrollTop > 10);
-    };
-
-    mainEl.addEventListener('scroll', handleScroll, { passive: true });
-    
-    handleScroll();
-
-    return () => {
-      mainEl.removeEventListener('scroll', handleScroll);
-    };
-  }, [initializing, selectedProject]); // Re-run effect when main element content changes
+    if (contentRef.current) {
+        contentRef.current.scrollTop = 0;
+    }
+  }, [activeTab, activeSubTab]);
 
   const handleTabClick = (tab: Tab) => {
-    // If we're on the projects tab and click it again, go back to project list
-    if (activeTab === tab && tab === 'PROJECTS') {
-      setSelectedProject(null);
-    } else {
-      // Otherwise, switch tab and clear project selection
-      setActiveTab(tab);
-      setSelectedProject(null);
-    }
-    // Scroll to top when changing views
-    if(mainRef.current) mainRef.current.scrollTop = 0;
-  };
-
-  const handleProjectClick = (project: Project) => {
-    setSelectedProject(project);
-    // Scroll to top when changing views
-    if(mainRef.current) mainRef.current.scrollTop = 0;
+    setActiveTab(tab);
+    setActiveSubTab(null);
   };
 
   const renderContent = () => {
-    if (activeTab === 'PROJECTS' && selectedProject) {
-      return selectedProject.details;
-    }
-
     switch (activeTab) {
-      case 'SYSTEM':
-        return (
-          <>
-            <p className="mb-2">&gt; RUNNING SYSTEM DIAGNOSTICS...</p>
-            <p className="text-green-400 mb-2">
-              [OK] MEMORY INTEGRITY CHECK
-              <br />
-              [OK] CPU CORES ONLINE
-              <br />
-              [OK] NEURAL INTERFACE SYNCED
-            </p>
-            <p className="mb-4">&gt; Welcome, operator. This is a retro-futuristic, cyberpunk-themed web interface inspired by old CRT monitors and green-screen computer terminals. All systems are nominal. Select a tab to proceed.</p>
-            <p>&gt; AESTHETIC: MONOCHROME PHOSPHOR. FONT: VT323. VIBE: 80S HACKER.</p>
-          </>
-        );
-      case 'PROJECTS':
-        return (
-          <>
-            <p className="mb-2">&gt; ACCESSING PROJECT ARCHIVES...</p>
-            <div className="border-t-2 border-green-400/30 pt-2">
-              {projects.map((project) => (
-                <div key={project.id} className="mb-4">
-                  <button 
-                    onClick={() => handleProjectClick(project)} 
-                    className="font-bold text-left hover:text-white transition-colors duration-200 block w-full"
-                    aria-label={`View details for ${project.shortTitle}`}
-                  >
-                    <span className="text-green-400/60 mr-2">&gt;</span>{project.title}
-                  </button>
-                  <p className="ml-6 text-green-400/80">STATUS: {project.status} - {project.description}</p>
-                </div>
-              ))}
-            </div>
-          </>
-        );
-      case 'CONTACT':
-        return (
-          <>
-            <p className="mb-2">&gt; OPENING SECURE COMMS CHANNEL...</p>
-            <p>You can establish contact through the following encrypted nodes:</p>
-            <ul className="list-inside list-disc ml-4 mt-2">
-                <li>EMAIL: operator@cyberspace.net</li>
-                <li>MATRIX: @user:matrix.dystopian.net</li>
-                <li>SIGNAL: +00 1 555 0199</li>
-            </ul>
-            <p className="mt-4">&gt; Channel secured. Awaiting transmission...</p>
-          </>
-        );
-      default:
-        return null;
+        case 'PROJECTS':
+            return <UnderConstructionContent message="SYSTEM UNDER RECONSTRUCTION" subMessage="SIGNAL FRAGMENTED. PLEASE STAND BY." />;
+        case 'LAB_NOTES':
+            return <UnderConstructionContent message="SPECIMEN IN EMBRYONIC STASIS" subMessage="AWAITING INCUBATION PROTOCOL." />;
+        case 'ARTIST_INFO_LOG':
+            return artistContent;
+        case 'DO_YOU_COPY':
+             return <ContactContent />;
+        case 'OBSERVER_INTAKE':
+        default:
+            return <ObserverIntakeContent />;
     }
   };
-
-  const NavigationButtons = (
-    <nav aria-label="Main navigation">
-      <ul className="flex space-x-2 items-center">
-        {tabs.map((tab) => (
-          <React.Fragment key={tab}>
-            <li>
-              <button
-                onClick={() => handleTabClick(tab)}
-                className={`px-4 py-1 border-2 transition-all duration-200 text-sm ${
-                  activeTab === tab
-                    ? 'bg-green-400 text-black'
-                    : 'border-green-400/50 hover:bg-green-400/20'
-                }`}
-                aria-current={activeTab === tab ? 'page' : undefined}
-              >
-                {tab}
-              </button>
-            </li>
-            {tab === 'PROJECTS' && selectedProject && (
-              <>
-                <li className="text-green-400/70 select-none text-lg" aria-hidden="true">&gt;</li>
-                <li>
-                  <button
-                    className="px-4 py-1 border-2 bg-green-400 text-black transition-all duration-200 text-sm"
-                    aria-current="page"
-                  >
-                    {selectedProject.shortTitle}
-                  </button>
-                </li>
-              </>
-            )}
-          </React.Fragment>
-        ))}
-      </ul>
-    </nav>
-  );
+  
+  const renderSubNav = () => {
+    return null;
+  }
 
   return (
-    <div className="bg-black min-h-screen text-green-400 flex flex-col items-center justify-center p-4 selection:bg-green-400 selection:text-black">
+    <div className="bg-black text-green-400 min-h-screen flex flex-col font-['VT323',_monospace] selection:bg-yellow-400 selection:text-black animate-[crt-flicker_5s_infinite]">
       <ScanLines />
       <NoiseOverlay />
-      <div className="relative w-full max-w-[calc(64rem/1.5)] h-[60vh] scale-[1.5] border-4 border-green-400/50 rounded-l-lg p-4 pr-6 bg-black/50 [box-shadow:0_0_20px_rgba(16,185,129,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] flex flex-col animate-[crt-flicker_3s_infinite]">
-        <div className="absolute -top-[2px] -right-[2px]" aria-hidden="true">
-            <div className="flex items-center">
-                <div className="w-16 h-[4px] bg-green-400/50"></div>
-                <div className="bg-black pl-2 pr-1 text-base md:text-lg text-green-400 whitespace-nowrap animate-[text-flicker_2s_infinite]">
-                    0x7A2F_v1.3.37
-                </div>
-                <div className="w-[4px] h-14 bg-green-400/50 -ml-[2px]"></div>
+      
+        {booting ? (
+            <div className="w-full h-full flex-grow flex items-center justify-center text-xl md:text-3xl p-4">
+                <HighlightedTypingText 
+                    preText="> YOU ARE IN " 
+                    highlightedText="THE FRANKENSTEIN PANOPTICON" 
+                    speed={80} 
+                    onComplete={() => setTimeout(() => setBooting(false), 1500)} 
+                />
             </div>
-        </div>
-        <header className="flex items-start border-b-2 border-green-400/30 pb-2 mb-4 animate-[text-flicker_2s_infinite]">
-          <div className="flex items-center gap-x-4 gap-y-2 md:gap-x-8 flex-wrap">
-            <h1 className="text-xl md:text-2xl">
-              <span className="lg:hidden">CYBERPUNK TERMINAL</span>
-              <span className="hidden lg:inline">CYBERPUNK TERMINAL INTERFACE</span>
-            </h1>
-            <div className={`transition-opacity duration-300 ${isScrolled ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-              {NavigationButtons}
-            </div>
-          </div>
-        </header>
-        
-        <main ref={mainRef} className="flex-grow overflow-y-auto pr-2 min-h-0">
-          {initializing ? (
-            <TypingText text="> INITIALIZING CRT DISPLAY... BOOT SEQUENCE INITIATED... WELCOME TO THE GRID..." onComplete={() => setInitializing(false)} />
-          ) : (
-            <>
-              <div className={`mb-4 transition-opacity duration-300 ${isScrolled ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                {NavigationButtons}
-              </div>
-              <TerminalWindow title={selectedProject ? `PROJECTS > ${selectedProject.shortTitle}` : activeTab}>
-                {renderContent()}
-              </TerminalWindow>
-            </>
-          )}
-        </main>
+        ) : (
+            <div className="w-full h-full p-2 flex flex-col flex-grow">
+                {/* Desktop Header */}
+                <header className="hidden md:flex justify-between items-center p-2 border-2 border-green-400/30 bg-black/20 flex-shrink-0">
+                    <div className="text-left text-sm uppercase font-bold font-lcd md:w-[30%]">
+                        <p>Counterfascial Interface</p>
+                        <p>Anomalous Observer: <span className="text-yellow-400 animate-[text-flicker_7s_infinite]">*DETECTED*</span></p>
+                    </div>
+                    <h1 className="text-center font-lcd text-2xl lg:text-3xl md:w-[40%] bg-green-400/80 text-black px-2 py-1 whitespace-nowrap">
+                        <ScrambledTitle text={originalTitle} isBooting={booting} />
+                    </h1>
+                    <div className="text-right text-sm uppercase font-bold font-lcd md:w-[30%]">
+                        <p>FRPN_v2.1.0_20251117</p>
+                        <p className="flex items-center justify-end">
+                            <span className="blinking-red-dot inline-block w-2 h-2 rounded-full mr-2"></span>
+                            Session Logging Active
+                        </p>
+                    </div>
+                </header>
 
-        <footer className="border-t-2 border-green-400/30 pt-2 mt-4 text-green-400/60 flex justify-between">
-          <span>STATUS: CONNECTED</span>
-          <span>
-            <BlinkingCursor />
-          </span>
-          <span>SECURE_CONNECTION_ESTABLISHED</span>
-        </footer>
-      </div>
+                {/* Mobile Header */}
+                <header className="md:hidden p-2 border-2 border-green-400/30 bg-black/20 flex-shrink-0">
+                    <h1 className="text-center font-lcd text-2xl mb-2 bg-green-400/80 text-black px-2 py-1 whitespace-nowrap">
+                      <ScrambledTitle text={originalTitle} isBooting={booting} />
+                    </h1>
+                    <div className="flex justify-between items-center text-xs uppercase font-lcd">
+                        <div className="text-left">
+                            <p>Counterfascial Interface</p>
+                            <p>Anomalous Observer: <span className="text-yellow-400 animate-[text-flicker_7s_infinite]">*DETECTED*</span></p>
+                        </div>
+                        <div className="text-right">
+                            <p>FRPN_v2.1.0_20251117</p>
+                            <p className="flex items-center justify-end">
+                                <span className="blinking-red-dot inline-block w-2 h-2 rounded-full mr-2"></span>
+                                Session Logging Active
+                            </p>
+                        </div>
+                    </div>
+                </header>
+
+                {/* Main Content Area */}
+                <main className="flex flex-col md:flex-row flex-grow min-h-0 gap-2 mt-2 md:items-stretch">
+                    
+                    {/* Left Sidebar (Desktop) */}
+                    <aside className="hidden md:block md:w-[30%] flex-shrink-0">
+                        <NavigationPanel tabs={tabs} activeTab={activeTab} onTabClick={handleTabClick} />
+                    </aside>
+
+                    {/* Mobile Navigation */}
+                    <div className="flex flex-col flex-grow min-h-0 md:hidden order-2">
+                      <NavigationHeader />
+                      <div className="flex flex-nowrap justify-center gap-1 my-2 px-2">
+                          {tabs.map((tab) => (
+                              <button
+                                  key={tab}
+                                  onClick={() => handleTabClick(tab)}
+                                  className={`flex-grow flex items-center justify-center text-center px-2 py-2 transition-all duration-200 uppercase text-xs border border-green-400/30 ${
+                                      activeTab === tab
+                                      ? 'bg-yellow-400 text-black animate-[text-flicker_7s_infinite]'
+                                      : 'bg-black/20 hover:bg-green-900/60 hover:text-green-300'
+                                  }`}
+                                  aria-current={activeTab === tab ? 'page' : undefined}
+                              >
+                                  {tab}/
+                              </button>
+                          ))}
+                      </div>
+                    </div>
+
+
+                    {/* Center Content */}
+                    <section className="flex flex-col min-h-0 md:w-[40%] order-1 md:order-none">
+                      <TerminalWindow title={`${activeTab}`} contentRef={contentRef}>
+                        {renderSubNav()}
+                        <div className="min-h-0 flex-grow flex flex-col">
+                            {renderContent()}
+                        </div>
+                      </TerminalWindow>
+                    </section>
+                    
+                    {/* Right Sidebar */}
+                    <aside className="w-full md:w-[30%] flex-shrink-0 mt-2 md:mt-0 order-3 md:order-none">
+                        <RightSidebar />
+                    </aside>
+                </main>
+                
+                {/* Footer */}
+                <footer className="flex-shrink-0 pt-2">
+                    <div className="flex flex-col md:flex-row gap-2">
+                        <div className="w-full md:w-[20%] p-2 border border-green-400/20 bg-green-400/10 flex items-center justify-center">
+                            <h2 className="text-center text-xl sm:text-2xl md:text-4xl font-bold text-green-400 font-lcd">
+                                <span className="hidden md:inline">
+                                    <a href="https://en.wikipedia.org/wiki/Galvanism" target="_blank" rel="noopener noreferrer" className="md:block hover:text-yellow-400 transition-colors duration-200">GALVANIC</a>{' '}
+                                    <a href="https://en.wikipedia.org/wiki/Hedonism" target="_blank" rel="noopener noreferrer" className="md:block hover:text-yellow-400 transition-colors duration-200">HEDONIMETRY</a>{' '}
+                                    <a href="https://en.wikipedia.org/wiki/Augury" target="_blank" rel="noopener noreferrer" className="md:block hover:text-yellow-400 transition-colors duration-200">AUGURITICS</a>
+                                </span>
+                                <span className="md:hidden">GALVANIC_HEDONIMETRY_AUGURITICS/</span>
+                            </h2>
+                        </div>
+                        <div className="w-full md:w-[80%]">
+                            <StatusPanel startAnimation={true} />
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        )}
     </div>
   );
 };

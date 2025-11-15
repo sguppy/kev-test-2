@@ -4,28 +4,68 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cyberpunk Terminal</title>
+    <title>THE FRANKENSTEIN PANOPTICON</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
     <style>
       body {
         font-family: 'VT323', monospace;
       }
+      .font-lcd {
+        font-family: 'Share Tech Mono', monospace;
+      }
       @keyframes text-flicker {
-        0% { opacity: 1; }
-        50.2% { opacity: 0.7; }
-        100% { opacity: 1; }
+        0%, 95%, 100% { opacity: 1; }
+        96% { opacity: 0.6; }
+        98% { opacity: 1; }
+        99% { opacity: 0.7; }
       }
       @keyframes crt-flicker {
-        0% { opacity: 0.95; }
-        50% { opacity: 1; }
-        100% { opacity: 0.95; }
+        0%, 98%, 100% { opacity: 1; }
+        99% { opacity: 0.92; }
       }
       @keyframes blink {
         0%, 100% { opacity: 1; }
         50% { opacity: 0; }
+      }
+      @keyframes flicker-in {
+        0%, 39% { opacity: 0; }
+        40% { opacity: 0.8; }
+        42% { opacity: 0.2; }
+        45% { opacity: 1; }
+        60% { opacity: 0.4; }
+        70% { opacity: 1; }
+        100% { opacity: 1; }
+      }
+      @keyframes red-blink {
+        50% { opacity: 0; }
+      }
+      .blinking-red-dot {
+        background-color: #ef4444; /* red-500 */
+        animation: red-blink 1s step-end infinite;
+      }
+
+      /* Custom Scrollbar Styles */
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #052e16; /* Dark Green */
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #34d399; /* Green 400 */
+        border: 1px solid #10b981; /* Green 500 */
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #6ee7b7; /* Green 300 */
+      }
+      /* For Firefox */
+      html {
+        scrollbar-color: #34d399 #052e16;
+        scrollbar-width: thin;
       }
     </style>
   <script type="importmap">
