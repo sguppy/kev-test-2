@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ScanLines } from './components/ScanLines';
 import { NoiseOverlay } from './components/NoiseOverlay';
@@ -37,7 +38,7 @@ const ObserverIntakeContent: React.FC = () => (
         <p className="mt-2 indent-4">The system watches itself, and in doing so, learns to exist. The audience is invited to witness the birth of a ghost in the machine—a ghost assembled from phantom signals and decaying memory.</p>
         <p className="mt-2 indent-4">This terminal is your interface to its nervous system. Each section provides a different window into its logic, its history, and its architect. Proceed with caution. The signal is unstable.</p>
     </div>
-    <p className="mt-auto pl-4">> STANDING BY FOR INPUT...<BlinkingCursor /></p>
+    <p className="mt-auto pl-4">&gt; STANDING BY FOR INPUT...<BlinkingCursor /></p>
   </div>
 );
 
@@ -61,19 +62,19 @@ const ContactContent: React.FC = () => {
             <p className="indent-4 mb-4">The signal is weak, but the channel is open. Use the provided coordinates to establish a direct link with the operator.</p>
             
             <div className="pl-4 mb-6">
-                <p className="mb-2">> DECRYPTION KEY: EMAIL</p>
+                <p className="mb-2">&gt; DECRYPTION KEY: EMAIL</p>
                 <a href="mailto:operator.prime@frankenstein-panopticon.net" className="ml-4 text-white hover:text-yellow-400 transition-colors duration-200 underline">operator.prime@frankenstein-panopticon.net</a>
             </div>
 
             <div className="pl-4 mb-6">
-                <p className="mb-2">> VISUAL DATA STREAM: INSTAGRAM</p>
+                <p className="mb-2">&gt; VISUAL DATA STREAM: INSTAGRAM</p>
                 <a href="https://www.instagram.com/operator_prime" target="_blank" rel="noopener noreferrer" className="ml-4 text-white hover:text-yellow-400 transition-colors duration-200 underline">@operator_prime</a>
             </div>
 
             <div className="pl-4">
-                <p className="mb-2">> SUBSCRIBE TO SIGNAL ECHOES (NEWSLETTER):</p>
+                <p className="mb-2">&gt; SUBSCRIBE TO SIGNAL ECHOES (NEWSLETTER):</p>
                 {submitted ? (
-                    <p className="ml-4 text-yellow-400">> SIGNAL RECEIVED. AWAITING HANDSHAKE.<BlinkingCursor /></p>
+                    <p className="ml-4 text-yellow-400">&gt; SIGNAL RECEIVED. AWAITING HANDSHAKE.<BlinkingCursor /></p>
                 ) : (
                     <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 ml-4">
                         <input 
@@ -88,7 +89,7 @@ const ContactContent: React.FC = () => {
                     </form>
                 )}
             </div>
-            <p className="mt-auto pl-4">> STANDING BY...<BlinkingCursor /></p>
+            <p className="mt-auto pl-4">&gt; STANDING BY...<BlinkingCursor /></p>
         </div>
     );
 };
