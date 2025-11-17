@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 
 const playlists = [
@@ -60,14 +61,13 @@ export const RightSidebar: React.FC = () => {
         <div className="pb-3 mb-3">
           <p className="text-lg uppercase text-green-400/70 mb-1">
             <span className="hidden md:inline">
-                &gt; SONIC{' '}
-                <SneakyLink href="https://en.wikipedia.org/wiki/Subcarrier">SUBCARRIER</SneakyLink>{' '}
+                {' > SONIC '}<SneakyLink href="https://en.wikipedia.org/wiki/Subcarrier">SUBCARRIER</SneakyLink>{' '}
                 <SneakyLink href="https://en.wikipedia.org/wiki/Sa%E1%B9%83s%C4%81ra">SAMSARIC</SneakyLink>{' '}
                 <SneakyLink href="https://en.wikipedia.org/wiki/Schema_(psychology)">SCHEMA</SneakyLink>{' '}
                 <SneakyLink href="https://en.wikipedia.org/wiki/Schematic">SCHEMATICS</SneakyLink>
             </span>
             <span className="md:hidden">
-                &gt; SONIC_SUBCARRIER_SAMSARIC_SCHEMA_SCHEMATICS/
+                {' > SONIC_SUBCARRIER_SAMSARIC_SCHEMA_SCHEMATICS/'}
             </span>
           </p>
           <div className="text-base text-green-400/80 flex justify-center">
